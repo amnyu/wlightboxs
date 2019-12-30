@@ -11,3 +11,4 @@ Usage:
     host: <ip_address of your wlightboxs>
     name: <device_name>
   ```
+ * Restart home assistant and it should work :D
