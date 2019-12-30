@@ -1,0 +1,8 @@
+{
+	"domain": "wlightboxs",
+	"name": "BleBox wLightBoxS",
+	"documentation": "https://www.example.com",
+	"dependencies": [],
+	"codeowners": ["amnyu"],
+	"requirements": ["requests"]
+}
