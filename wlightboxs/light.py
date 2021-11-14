@@ -1,12 +1,13 @@
 import logging
-from time import sleep
-
-import homeassistant.helpers.config_validation as cv
-import requests
 import voluptuous as vol
+
+import requests
+from time import sleep
+# Import the device class from the component that you want to support
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS, Light, PLATFORM_SCHEMA, SUPPORT_BRIGHTNESS)
 from homeassistant.const import CONF_HOST, CONF_NAME
+import homeassistant.helpers.config_validation as cv
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,25 +22,29 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
+    """Setup the wLightBoxS platform."""
     host = config.get(CONF_HOST)
     device_name = config.get(CONF_NAME)
 
     device = 'http://{}/'.format(host)
-    device_state = requests.get(device + "api/device/state")
+    device_state = requests.get(device + "info")
     status_code = device_state.status_code
 
     if status_code != 200:
         _LOGGER.error("Could not connect to wLightBoxS")
         return False
-    elif device_state.json()['device']['type'] != 'wLightBoxS':
+    elif device_state.json()['device']['product'] != 'wLightBoxS':
         _LOGGER.error("Not a wLightBoxS device")
 
     add_entities([wLightBoxS(device, device_name)])
 
 
 class wLightBoxS(Light):
+    """Representation of an wLightBoxS."""
 
     def __init__(self, light, name=None):
+        """Initialize a wLightBoxS."""
+
         self._light = light
         self._name = name
         self._state = None
@@ -64,16 +69,16 @@ class wLightBoxS(Light):
 
     def turn_on(self, **kwargs):
         brightness = kwargs.get(ATTR_BRIGHTNESS, 255)
-        brigthness_hex = '{0:02x}'.format(brightness)
-        requests.get(self._light + "s/" + brigthness_hex)
+        brightness_hex = '{0:02x}'.format(brightness)
+        requests.get(self._light + "s/" + brightness_hex)
 
     def turn_off(self, **kwargs):
         requests.get(self._light + "s/00")
 
     def update(self):
-        light_state = requests.get(self._light + "api/light/state")
+        light_state = requests.get(self._light + "api/rgbw/state")
 
-        brightness_raw = light_state.json()['light']['desiredColor']
+        brightness_raw = light_state.json()['rgbw']['desiredColor']
         brightness = int(brightness_raw, 16)
 
         self._state = brightness > 0
